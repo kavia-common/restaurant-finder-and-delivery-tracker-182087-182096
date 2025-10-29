@@ -1,0 +1,4 @@
+{
+    "command": "npm run dev -- -p <port> -H <host>",
+    "working_directory": "/home/kavia/workspace/code-generation/restaurant-finder-and-delivery-tracker-182087-182096/food_delivery_frontend"
+}
