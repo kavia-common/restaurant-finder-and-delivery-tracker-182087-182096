@@ -5,6 +5,7 @@ import "../styles/theme.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Suspense } from "react";
+import { StoreProvider } from "@/store/store";
 
 /**
  * Root layout for the OceanEats application.
@@ -50,14 +51,16 @@ export default function RootLayout({
         className="min-h-screen bg-gray-50 text-gray-900 antialiased"
         suppressHydrationWarning
       >
-        {/* Wrap Navbar in Suspense because it uses useSearchParams hook */}
-        <Suspense fallback={<div className="h-16 w-full" />}>
-          <Navbar />
-        </Suspense>
-        <main className="mx-auto max-w-7xl px-4 pb-10 pt-6 sm:px-6 lg:px-8">
-          {children}
-        </main>
-        <Footer />
+        <StoreProvider>
+          {/* Wrap Navbar in Suspense because it uses useSearchParams hook */}
+          <Suspense fallback={<div className="h-16 w-full" />}>
+            <Navbar />
+          </Suspense>
+          <main className="mx-auto max-w-7xl px-4 pb-10 pt-6 sm:px-6 lg:px-8">
+            {children}
+          </main>
+          <Footer />
+        </StoreProvider>
       </body>
     </html>
   );
