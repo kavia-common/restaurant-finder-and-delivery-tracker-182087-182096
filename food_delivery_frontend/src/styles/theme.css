@@ -1,0 +1,113 @@
+:root {
+  /* Brand palette from Ocean Professional */
+  --color-primary: #2563EB; /* Primary Blue */
+  --color-secondary: #F59E0B; /* Amber accent */
+  --color-success: #F59E0B; /* Using amber as success accent per style guide */
+  --color-error: #EF4444; /* Red for error states */
+
+  --color-bg: #f9fafb; /* Background base */
+  --color-surface: #ffffff; /* Cards / Surfaces */
+  --color-text: #111827; /* Primary text */
+
+  /* Derived / subtle variants */
+  --color-primary-50: 37, 99, 235;   /* as rgb for alpha-based utilities */
+  --color-secondary-50: 245, 158, 11;
+  --color-error-50: 239, 68, 68;
+
+  /* Shadows & radii for modern aesthetic */
+  --shadow-sm: 0 1px 2px 0 rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
+
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+
+  /* Gradient definition from style guide: "from-blue-500/10 to-gray-50" */
+  --gradient-start: rgba(37, 99, 235, 0.10);
+  --gradient-end: #f9fafb;
+  --app-gradient: linear-gradient(180deg, var(--gradient-start), var(--gradient-end));
+}
+
+/* Dark mode scaffold (optional, extensible later) */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #0b1220;
+    --color-surface: #0f172a;
+    --color-text: #e5e7eb;
+    --gradient-end: #0b1220;
+    --app-gradient: linear-gradient(180deg, rgba(37,99,235,0.18), var(--gradient-end));
+  }
+}
+
+/* Semantic aliases for consistent usage across app */
+:root {
+  --app-bg: var(--color-bg);
+  --app-surface: var(--color-surface);
+  --app-text: var(--color-text);
+  --app-primary: var(--color-primary);
+  --app-secondary: var(--color-secondary);
+  --app-success: var(--color-success);
+  --app-error: var(--color-error);
+}
+
+/* Utility classes mapped to CSS variables for easy Tailwind composition if needed */
+.bg-app {
+  background: var(--app-gradient);
+}
+
+.bg-surface {
+  background-color: var(--app-surface);
+}
+
+.text-app {
+  color: var(--app-text);
+}
+
+.text-primary {
+  color: var(--app-primary);
+}
+
+.text-secondary {
+  color: var(--app-secondary);
+}
+
+.border-primary {
+  border-color: var(--app-primary);
+}
+
+.btn-primary {
+  background-color: var(--app-primary);
+  color: white;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  transition: transform 200ms ease, box-shadow 200ms ease, background-color 200ms ease;
+}
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+  background-color: rgba(var(--color-primary-50), 1);
+}
+
+.card {
+  background-color: var(--app-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  background-color: rgba(var(--color-primary-50), 0.08);
+  color: var(--app-primary);
+  border-radius: 9999px;
+  border: 1px solid rgba(17, 24, 39, 0.06);
+}
+
+/* Focus ring consistent with theme */
+:focus-visible {
+  outline: 2px solid var(--app-primary);
+  outline-offset: 2px;
+}
