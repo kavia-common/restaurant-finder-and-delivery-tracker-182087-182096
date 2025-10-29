@@ -44,12 +44,20 @@ const persistPartial = persist as unknown as PersistWrapper<StoreSlices>;
 export const useAppStore = create<StoreSlices>()(
   devtools(
     persistPartial(
-      ((...a: Parameters<StateCreator<StoreSlices>>): StoreSlices => ({
-        ...createCartSlice(...a),
-        ...createUserSlice(...a),
-        ...createOrderSlice(...a),
-        ...createUISlice(...a),
-      })) as StateCreator<StoreSlices>,
+      ((set, get, _store) => {
+        // capture store reference for use inside persist options (like migrate)
+        const capturedStore = _store;
+
+        // compose slices with the same set/get/store to ensure a single source of truth
+        const composed = {
+          ...createCartSlice(set, get, capturedStore),
+          ...createUserSlice(set, get, capturedStore),
+          ...createOrderSlice(set, get, capturedStore),
+          ...createUISlice(set, get, capturedStore),
+        } as StoreSlices;
+
+        return composed;
+      }) as StateCreator<StoreSlices>,
       {
         name: "food-app-store",
         version: STORAGE_VERSION,
@@ -59,19 +67,54 @@ export const useAppStore = create<StoreSlices>()(
           cart: state.cart,
           user: state.user,
         })) as unknown as (state: StoreSlices) => StoreSlices,
-        storage: createJSONStorage(() =>
-          typeof window !== "undefined" ? window.localStorage : undefined
-        ),
+        storage: createJSONStorage(() => {
+          // Provide a valid storage implementation for both browser and SSR environments
+          if (typeof window !== "undefined" && window?.localStorage) {
+            return window.localStorage;
+          }
+          // Minimal no-op in-memory storage to satisfy StateStorage type during SSR
+          const memory = new Map<string, string>();
+          return {
+            getItem: (name: string) => Promise.resolve(memory.get(name) ?? null),
+            setItem: (name: string, value: string) => {
+              memory.set(name, value);
+              return Promise.resolve();
+            },
+            removeItem: (name: string) => {
+              memory.delete(name);
+              return Promise.resolve();
+            },
+          };
+        }),
         // Use a typed migrate that applies our migration map
         migrate: (
-          persisted: PersistedShape | undefined,
+          persistedState: unknown,
           fromVersion: number
-        ): PersistedShape | undefined => {
-          if (!persisted) return persisted;
-          if (fromVersion === STORAGE_VERSION) return persisted;
-          const next = migrations[STORAGE_VERSION];
-          const result: PersistedShape = next ? next(persisted) : persisted;
-          return result;
+        ): StoreSlices | Promise<StoreSlices> => {
+          // When no persisted data, return current store state as baseline
+          const current = (capturedStore as unknown as { getState: () => StoreSlices }).getState();
+
+          if (!persistedState || typeof persistedState !== "object") {
+            return current;
+          }
+
+          // We persisted only a subset (PersistedShape). Migrate that subset if needed.
+          const partial = persistedState as PersistedShape;
+
+          let migratedSubset = partial;
+          if (fromVersion !== STORAGE_VERSION) {
+            const migration = migrations[STORAGE_VERSION];
+            migratedSubset = migration ? migration(partial) : partial;
+          }
+
+          // Merge migrated subset back into the current full state shape
+          const merged: StoreSlices = {
+            ...current,
+            cart: migratedSubset.cart ?? current.cart,
+            user: migratedSubset.user ?? current.user,
+          };
+
+          return merged;
         },
       }
     )
