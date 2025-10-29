@@ -19,10 +19,16 @@ Modern food delivery UI built with Next.js (App Router), TypeScript, Tailwind, Z
 
 ## Environment
 
-Create `.env.local`:
-- NEXT_PUBLIC_API_BASE_URL=https://api.example.com
-- NEXT_PUBLIC_WS_URL=wss://ws.example.com
-- NEXT_PUBLIC_SITE_URL=http://localhost:3000
+Configure environment variables using the root `.env.example`:
+1) In the repository root, copy `.env.example` to `.env`
+2) Provide values:
+   - NEXT_PUBLIC_API_BASE_URL=https://api.example.com
+   - NEXT_PUBLIC_WS_URL=wss://ws.example.com
+   - NEXT_PUBLIC_MAPS_KEY=your_public_maps_key
+
+Notes:
+- These are public client-side values (prefixed with NEXT_PUBLIC_); do not include secrets.
+- The API and WebSocket URLs are consumed by `src/lib/api.ts` and `src/lib/ws.ts` respectively.
 
 ## Architecture
 

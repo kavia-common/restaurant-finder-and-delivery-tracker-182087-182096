@@ -65,14 +65,21 @@ Note: Commands are non-interactive and ready for CI.
 
 ## Environment Variables
 
-Do not commit secrets. Create a `.env.local` file in `food_delivery_frontend/` with values needed for your environment.
+This project uses environment variables for configuration. Do not commit secrets.
 
-Example `.env.local`:
-- NEXT_PUBLIC_API_BASE_URL=<backend REST API base URL>
-- NEXT_PUBLIC_WS_URL=<websocket URL for live order updates>
-- NEXT_PUBLIC_SITE_URL=<public site URL, used for auth redirect where applicable>
+Root-level example file:
+- Copy `.env.example` at the repository root to `.env` and provide values:
+  - NEXT_PUBLIC_API_BASE_URL: Base URL for the backend REST API (e.g., http://localhost:4000)
+  - NEXT_PUBLIC_WS_URL: WebSocket URL for live order updates (e.g., ws://localhost:4000/ws)
+  - NEXT_PUBLIC_MAPS_KEY: Public maps provider key used by map components
 
-These are referenced by the placeholder API and WS utilities in `src/lib/`.
+Notes:
+- These variables are public (prefixed with NEXT_PUBLIC_) and will be embedded in the client bundle.
+- Do not place any private secrets in these variables.
+- Frontend utilities read these values:
+  - API client: `food_delivery_frontend/src/lib/api.ts` uses NEXT_PUBLIC_API_BASE_URL
+  - WebSocket client: `food_delivery_frontend/src/lib/ws.ts` uses NEXT_PUBLIC_WS_URL
+  - Map components (where applicable) read NEXT_PUBLIC_MAPS_KEY
 
 ---
 
