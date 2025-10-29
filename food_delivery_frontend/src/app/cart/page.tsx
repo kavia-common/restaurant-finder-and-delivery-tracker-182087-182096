@@ -17,8 +17,20 @@ import { CartSummary } from "@/components/cart/CartSummary";
  * - Provides a placeholder coupon input and clear cart action
  * - Shows total items and restaurant name if available
  */
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { useUser } from "@/store/store";
+
 export default function CartPage() {
   const { cart } = useCart();
+  const router = useRouter();
+  const { isLoggedIn } = useUser();
+
+  useEffect(() => {
+    if (!isLoggedIn()) {
+      router.replace("/login?redirect=/cart");
+    }
+  }, [isLoggedIn, router]);
 
   const hasItems = cart.items.length > 0;
 

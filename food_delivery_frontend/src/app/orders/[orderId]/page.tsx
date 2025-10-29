@@ -174,6 +174,18 @@ export default function OrderTrackingPage() {
   const router = useRouter();
   const orderId = params?.orderId;
 
+  // Client-side auth guard
+  const { isLoggedIn } = useAppStore((s) => ({ isLoggedIn: s.isLoggedIn }));
+  useEffect(() => {
+    try {
+      if (!isLoggedIn()) {
+        router.replace(`/login?redirect=/orders/${orderId ?? ""}`);
+      }
+    } catch {
+      // ignore
+    }
+  }, [isLoggedIn, router, orderId]);
+
   const { order, setActiveOrder, setOrderStatus } = useAppStore((s) => ({
     order: s.order,
     setActiveOrder: s.setActiveOrder,

@@ -15,6 +15,53 @@ import { useEffect, useState } from "react";
  *
  * This is a client component due to router/search interactions.
  */
+import { useUser } from "@/store/store";
+
+function AuthActions() {
+  const { user, isLoggedIn, logout } = useUser();
+
+  if (isLoggedIn()) {
+    const display = user.profile?.name?.split(" ").map((s) => s[0]).join("").slice(0, 2) || "ME";
+    return (
+      <div className="relative inline-flex items-center gap-2">
+        <Link
+          href="/account"
+          className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-gradient-to-r from-blue-50 to-gray-50 px-2.5 py-1.5 text-sm text-gray-800 shadow-sm transition hover:from-blue-100 hover:to-gray-50"
+        >
+          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-xs font-semibold text-white">
+            {display}
+          </div>
+          <span className="hidden sm:inline">{user.profile?.name || "Account"}</span>
+        </Link>
+        <button
+          onClick={() => logout()}
+          className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm transition hover:border-red-300 hover:text-red-600"
+          aria-label="Log out"
+        >
+          Logout
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="inline-flex items-center gap-2">
+      <Link
+        href="/login"
+        className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700"
+      >
+        Sign in
+      </Link>
+      <Link
+        href="/register"
+        className="inline-flex items-center gap-2 rounded-lg border border-blue-200 bg-white px-3 py-2 text-sm font-medium text-blue-700 shadow-sm transition hover:bg-blue-50"
+      >
+        Register
+      </Link>
+    </div>
+  );
+}
+
 export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
@@ -23,19 +70,14 @@ export default function Navbar() {
   // Controlled search input synchronized with query string
   const [query, setQuery] = useState(searchParams.get("q") ?? "");
   const [cartCount, setCartCount] = useState(0);
-  const [isAuthed, setIsAuthed] = useState(false);
 
-  // Simulate reading auth and cart from localStorage (placeholder until integrated with real state)
+  // Simulate reading cart count from localStorage
   useEffect(() => {
     try {
       const storedCart = JSON.parse(
         (typeof window !== "undefined" && localStorage.getItem("cart")) || "[]"
       );
       setCartCount(Array.isArray(storedCart) ? storedCart.length : 0);
-
-      const token =
-        typeof window !== "undefined" && localStorage.getItem("auth_token");
-      setIsAuthed(Boolean(token));
     } catch {
       // no-op
     }
@@ -136,24 +178,8 @@ export default function Navbar() {
             )}
           </Link>
 
-          {isAuthed ? (
-            <Link
-              href="/account"
-              className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-gradient-to-r from-blue-50 to-gray-50 px-2.5 py-1.5 text-sm text-gray-800 shadow-sm transition hover:from-blue-100 hover:to-gray-50"
-            >
-              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-xs font-semibold text-white">
-                ME
-              </div>
-              <span className="hidden sm:inline">Account</span>
-            </Link>
-          ) : (
-            <Link
-              href="/signin"
-              className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700"
-            >
-              Sign in
-            </Link>
-          )}
+          {/* Auth actions */}
+          <AuthActions />
         </nav>
       </div>
 
