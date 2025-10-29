@@ -45,20 +45,22 @@ export const useAppStore = create<StoreSlices>()(
   devtools(
     persistPartial(
       ((set, get, _store) => {
-        // capture store reference for use inside persist options (like migrate)
+        // capture store reference and getter for use inside persist options (like migrate)
         const capturedStore = _store;
+        const capturedGet = get;
 
         // compose slices with the same set/get/store to ensure a single source of truth
         const composed = {
-          ...createCartSlice(set, get, capturedStore),
-          ...createUserSlice(set, get, capturedStore),
-          ...createOrderSlice(set, get, capturedStore),
-          ...createUISlice(set, get, capturedStore),
+          ...createCartSlice(set, capturedGet, capturedStore),
+          ...createUserSlice(set, capturedGet, capturedStore),
+          ...createOrderSlice(set, capturedGet, capturedStore),
+          ...createUISlice(set, capturedGet, capturedStore),
         } as StoreSlices;
 
         return composed;
       }) as StateCreator<StoreSlices>,
-      {
+      // Options object defined as a function to capture get via closure
+      ((getOptionsGet => ({
         name: "food-app-store",
         version: STORAGE_VERSION,
         // Zustand's PersistOptions expects the same state type; we intentionally persist only a subset.
@@ -91,11 +93,11 @@ export const useAppStore = create<StoreSlices>()(
           persistedState: unknown,
           fromVersion: number
         ): StoreSlices | Promise<StoreSlices> => {
-          // When no persisted data, return current store state as baseline
-          const current = (capturedStore as unknown as { getState: () => StoreSlices }).getState();
+          // Use the latest in-memory state as baseline
+          const current = getOptionsGet();
 
           if (!persistedState || typeof persistedState !== "object") {
-            return current;
+            return current as StoreSlices;
           }
 
           // We persisted only a subset (PersistedShape). Migrate that subset if needed.
@@ -109,14 +111,24 @@ export const useAppStore = create<StoreSlices>()(
 
           // Merge migrated subset back into the current full state shape
           const merged: StoreSlices = {
-            ...current,
-            cart: migratedSubset.cart ?? current.cart,
-            user: migratedSubset.user ?? current.user,
+            ...(current as StoreSlices),
+            cart: migratedSubset.cart ?? (current as StoreSlices).cart,
+            user: migratedSubset.user ?? (current as StoreSlices).user,
           };
 
           return merged;
         },
-      }
+      }))( // immediately invoke with a getter that will be set at runtime via a temporary store
+        // We provide a safe getter that reads from the global store instance
+        () => {
+          try {
+            return useAppStore.getState() as StoreSlices;
+          } catch {
+            // fallback to empty object cast if store not yet initialized
+            return {} as StoreSlices;
+          }
+        }
+      ))
     )
   )
 );
