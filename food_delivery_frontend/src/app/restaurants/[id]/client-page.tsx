@@ -11,6 +11,8 @@ import Button from "@/components/common/Button";
 import { formatCurrency } from "@/lib/format";
 import { useCart, useUI } from "@/store/store";
 import CategoryPill from "@/components/CategoryPill";
+import MenuItemCard from "@/components/MenuItemCard";
+import AddToCartBar from "@/components/AddToCartBar";
 
 type RestaurantWithMenu = Restaurant & { menu?: MenuItem[] };
 
@@ -29,85 +31,6 @@ function groupMenuByCategory(items: MenuItem[] | undefined): Record<string, Menu
     grouped[category].push(item);
   }
   return grouped;
-}
-
-/**
- * PUBLIC_INTERFACE
- * MenuItemCard - Renders a single menu item with add-to-cart controls.
- */
-function MenuItemCard({
-  item,
-  onAdd,
-}: {
-  item: MenuItem;
-  onAdd: (item: MenuItem) => void;
-}) {
-  return (
-    <Card className="h-full">
-      <div className="flex gap-4">
-        <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-gradient-to-br from-blue-50 to-gray-50">
-          {item.imageUrl ? (
-            <Image
-              src={item.imageUrl}
-              alt={item.name}
-              fill
-              className="object-cover"
-              sizes="80px"
-            />
-          ) : (
-            <div className="absolute inset-0 flex items-center justify-center text-xs text-gray-400">
-              No image
-            </div>
-          )}
-        </div>
-        <div className="min-w-0 flex-1">
-          <h4 className="line-clamp-1 text-sm font-semibold text-gray-900">{item.name}</h4>
-          {item.description ? (
-            <p className="mt-1 line-clamp-2 text-sm text-gray-600">{item.description}</p>
-          ) : null}
-          <div className="mt-2 flex items-center justify-between">
-            <span className="text-sm font-medium text-gray-900">{formatCurrency(item.price)}</span>
-            <Button size="sm" variant="secondary" onClick={() => onAdd(item)} aria-label={`Add ${item.name} to cart`}>
-              Add
-            </Button>
-          </div>
-        </div>
-      </div>
-    </Card>
-  );
-}
-
-/**
- * PUBLIC_INTERFACE
- * AddToCartBar - Sticky footer bar summarizing cart for current restaurant, with CTA to view cart/checkout.
- */
-function AddToCartBar({
-  subtotal,
-  quantity,
-  restaurantName,
-  onViewCart,
-}: {
-  subtotal: number;
-  quantity: number;
-  restaurantName: string | undefined;
-  onViewCart?: () => void;
-}) {
-  if (quantity <= 0) return null;
-  return (
-    <div className="fixed inset-x-0 bottom-0 z-30 bg-white/80 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] backdrop-blur supports-[backdrop-filter]:bg-white/70">
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
-        <div className="min-w-0">
-          <p className="text-sm font-medium text-gray-900">
-            {quantity} {quantity === 1 ? "item" : "items"} in cart {restaurantName ? `• ${restaurantName}` : ""}
-          </p>
-          <p className="text-xs text-gray-600">Subtotal: {formatCurrency(subtotal)}</p>
-        </div>
-        <Button variant="primary" size="md" onClick={onViewCart} aria-label="View cart">
-          View cart • {formatCurrency(subtotal)}
-        </Button>
-      </div>
-    </div>
-  );
 }
 
 /**

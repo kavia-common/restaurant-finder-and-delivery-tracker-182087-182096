@@ -1,17 +1,22 @@
+import type { Metadata } from "next";
+
 /**
  * PUBLIC_INTERFACE
- * generateStaticParams provides minimal params for static export compatibility.
- * For a real app, this would pre-generate known order IDs. Here we include a placeholder.
+ * generateStaticParams - Provides minimal static params for orders page when using output: export.
+ * Since orders are dynamic and user-specific, we provide an empty list so the route can build.
  */
-export function generateStaticParams() {
-  // Provide at least one placeholder param so Next.js can statically export the dynamic route scaffold.
-  // The page is a client component and loads data client-side.
-  return [{ orderId: "sample" }];
+export async function generateStaticParams(): Promise<Array<{ orderId: string }>> {
+  // In a real app, you could pre-render recent public demo orders.
+  // For static export in this template, return an empty list.
+  return [];
 }
 
-// Optional: provide minimal metadata generation to avoid any SSR assumptions if needed later.
-export async function generateMetadata(_: { params: { orderId: string } }) {
-  return {
-    title: `Order ${_.params.orderId} • OceanEats`,
-  };
-}
+/**
+ * PUBLIC_INTERFACE
+ * metadata - Optional page-level metadata to ensure consistent static export behavior.
+ */
+export const metadata: Metadata = {
+  // Keeping metadata minimal
+  title: "Order",
+  description: "Order details",
+};

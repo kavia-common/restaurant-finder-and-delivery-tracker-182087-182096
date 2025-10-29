@@ -169,6 +169,11 @@ type OrderStatusMessage = {
   [key: string]: unknown;
 };
 
+export async function generateStaticParams(): Promise<Array<{ orderId: string }>> {
+  // No pre-rendered orders for static export; return empty list.
+  return [];
+}
+
 export default function OrderTrackingPage() {
   const params = useParams<{ orderId: string }>();
   const router = useRouter();

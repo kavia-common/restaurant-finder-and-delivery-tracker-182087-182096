@@ -7,11 +7,11 @@ import Loading from "@/components/common/Loading";
 import ErrorState from "@/components/common/ErrorState";
 import Button from "@/components/common/Button";
 import { getRestaurants, Restaurant } from "@/lib/api";
-import CategoryPill from "@/components/CategoryPill";
+import RestaurantFilters, { FilterState } from "@/components/RestaurantFilters";
 
 /**
  * PUBLIC_INTERFACE
- * RestaurantsPage - Lists restaurants with search, basic cuisine filters, and pagination placeholder.
+ * RestaurantsPage - Lists restaurants with search, cuisine/rating/price filters, and pagination placeholder.
  * Uses mock getRestaurants() from api.ts. Provides loading and error states, follows theme.
  */
 export default function RestaurantsPage() {
@@ -21,11 +21,12 @@ export default function RestaurantsPage() {
 
   // Filters
   const [query, setQuery] = React.useState("");
-  const [selectedCuisine, setSelectedCuisine] = React.useState<string>("All");
-  const cuisineOptions = React.useMemo(
-    () => ["All", "Seafood", "BBQ", "Italian", "Asian", "Burgers", "Desserts"],
-    []
-  );
+  const [filters, setFilters] = React.useState<FilterState>({
+    cuisine: "All",
+    minRating: null,
+    priceRange: "Any",
+    query: "",
+  });
 
   // Simple pagination placeholder (client-side)
   const [page, setPage] = React.useState(1);
@@ -59,12 +60,24 @@ export default function RestaurantsPage() {
   const filtered = React.useMemo(() => {
     let result = restaurants;
 
-    if (selectedCuisine !== "All") {
+    // Cuisine
+    if (filters.cuisine !== "All") {
       result = result.filter(
-        (r) => r.cuisine.toLowerCase() === selectedCuisine.toLowerCase()
+        (r) => r.cuisine.toLowerCase() === filters.cuisine.toLowerCase()
       );
     }
 
+    // Rating
+    if (filters.minRating != null) {
+      result = result.filter((r) => (r.rating ?? 0) >= (filters.minRating ?? 0));
+    }
+
+    // Price - since our Restaurant type includes optional priceRange "$", "$$", "$$$"
+    if (filters.priceRange !== "Any") {
+      result = result.filter((r) => (r.priceRange ?? "").trim() === filters.priceRange);
+    }
+
+    // Text query (from dedicated search input)
     if (query.trim()) {
       const q = query.trim().toLowerCase();
       result = result.filter(
@@ -75,7 +88,7 @@ export default function RestaurantsPage() {
     }
 
     return result;
-  }, [restaurants, selectedCuisine, query]);
+  }, [restaurants, filters, query]);
 
   // Pagination calculations
   const total = filtered.length;
@@ -99,7 +112,7 @@ export default function RestaurantsPage() {
   // Reset to first page whenever filters or search change
   React.useEffect(() => {
     setPage(1);
-  }, [query, selectedCuisine]);
+  }, [query, filters]);
 
   return (
     <div className="flex flex-col gap-8">
@@ -117,8 +130,14 @@ export default function RestaurantsPage() {
           <div className="w-full max-w-xl">
             <SearchBar
               value={query}
-              onChange={setQuery}
-              onSubmit={setQuery}
+              onChange={(q) => {
+                setQuery(q);
+                setFilters((f) => ({ ...f, query: q }));
+              }}
+              onSubmit={(q) => {
+                setQuery(q);
+                setFilters((f) => ({ ...f, query: q }));
+              }}
               placeholder="Search restaurants or cuisines…"
               debounceMs={200}
             />
@@ -127,32 +146,7 @@ export default function RestaurantsPage() {
       </section>
 
       {/* Filters */}
-      <section aria-label="Filters" className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-base font-semibold text-gray-900">Filters</h2>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              setQuery("");
-              setSelectedCuisine("All");
-            }}
-            aria-label="Clear filters"
-          >
-            Clear filters
-          </Button>
-        </div>
-        <div className="no-scrollbar -mx-1 flex snap-x gap-2 overflow-x-auto px-1 pb-1">
-          {cuisineOptions.map((c) => (
-            <CategoryPill
-              key={c}
-              label={c}
-              selected={selectedCuisine === c}
-              onClick={() => setSelectedCuisine(c)}
-            />
-          ))}
-        </div>
-      </section>
+      <RestaurantFilters value={filters} onChange={setFilters} />
 
       {/* Results header */}
       <div className="flex items-center justify-between">
