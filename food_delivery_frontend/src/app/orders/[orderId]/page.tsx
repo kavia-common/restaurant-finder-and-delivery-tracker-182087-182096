@@ -10,133 +10,8 @@ import { Button } from "@/components/common/Button";
 import { Card } from "@/components/common/Card";
 import Loading from "@/components/common/Loading";
 import ErrorState from "@/components/common/ErrorState";
-
-/**
- * PUBLIC_INTERFACE
- * OrderStatusTimeline component displays the timeline of status updates for an order.
- */
-function OrderStatusTimeline({
-  status,
-  steps,
-  placedAt,
-}: {
-  status: string;
-  steps: Array<{ key: string; label: string; description?: string }>;
-  placedAt?: string | number | Date;
-}) {
-  // Map current status to completed index
-  const currentIndex = useMemo(() => {
-    const idx = steps.findIndex((s) => s.key === status);
-    return idx >= 0 ? idx : 0;
-  }, [status, steps]);
-
-  return (
-    <div className="relative">
-      <ol className="relative border-l border-blue-200">
-        {steps.map((step, idx) => {
-          const isCompleted = idx <= currentIndex;
-          const isCurrent = idx === currentIndex;
-
-          return (
-            <li key={step.key} className="ml-6 mb-8">
-              <span
-                className={[
-                  "absolute -left-3 flex h-6 w-6 items-center justify-center rounded-full ring-4",
-                  isCompleted
-                    ? "bg-blue-600 ring-blue-100"
-                    : "bg-gray-200 ring-gray-100",
-                ].join(" ")}
-              >
-                {isCompleted ? (
-                  <svg
-                    className="h-3 w-3 text-white"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M16.707 5.293a1 1 0 010 1.414L8.75 14.664a1 1 0 01-1.414 0L3.293 10.62a1 1 0 011.414-1.415L7.75 12.25l7.543-7.543a1 1 0 011.414 0z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                ) : (
-                  <span className="h-2 w-2 rounded-full bg-gray-400" />
-                )}
-              </span>
-              <h4
-                className={[
-                  "mb-1 text-sm font-semibold",
-                  isCurrent ? "text-blue-700" : "text-gray-800",
-                ].join(" ")}
-              >
-                {step.label}
-              </h4>
-              <p className="text-xs text-gray-600">
-                {step.description ??
-                  (isCurrent
-                    ? "In progress..."
-                    : isCompleted
-                    ? "Completed"
-                    : "Pending")}
-              </p>
-              {idx < steps.length - 1 && (
-                <div className="mt-4 h-4 w-full border-b border-dashed border-gray-200" />
-              )}
-            </li>
-          );
-        })}
-      </ol>
-      {placedAt && (
-        <div className="mt-4 text-xs text-gray-500">
-          Placed at: {new Date(placedAt).toLocaleString()}
-        </div>
-      )}
-    </div>
-  );
-}
-
-/**
- * PUBLIC_INTERFACE
- * LiveMapPlaceholder renders a stylized placeholder for a live map while not integrated.
- */
-function LiveMapPlaceholder({
-  restaurantName,
-  dropoffAddress,
-}: {
-  restaurantName?: string;
-  dropoffAddress?: string;
-}) {
-  return (
-    <div className="relative overflow-hidden rounded-xl border border-blue-100 bg-gradient-to-br from-blue-500/10 to-gray-50 p-4 shadow-sm">
-      <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(37,99,235,0.06)_25%,transparent_25%,transparent_50%,rgba(37,99,235,0.06)_50%,rgba(37,99,235,0.06)_75%,transparent_75%,transparent)] bg-[length:20px_20px] opacity-40" />
-      <div className="relative z-10">
-        <div className="mb-3 flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-blue-800">
-            Live Delivery Map
-          </h3>
-          <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-700">
-            Simulated
-          </span>
-        </div>
-        <div className="grid grid-cols-1 gap-3 text-sm text-gray-700 sm:grid-cols-2">
-          <div className="rounded-lg bg-white/70 p-3 shadow-inner">
-            <div className="text-xs text-gray-500">Pickup</div>
-            <div className="font-medium">{restaurantName ?? "Restaurant"}</div>
-          </div>
-          <div className="rounded-lg bg-white/70 p-3 shadow-inner">
-            <div className="text-xs text-gray-500">Drop-off</div>
-            <div className="font-medium">{dropoffAddress ?? "Your Address"}</div>
-          </div>
-        </div>
-        <div className="mt-4 h-40 w-full rounded-lg border border-blue-100 bg-white/80 shadow-inner">
-          <div className="flex h-full w-full items-center justify-center text-xs text-gray-500">
-            Map placeholder (integrate with real map provider)
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+import { OrderStatusTimeline } from "@/components/orders/OrderStatusTimeline";
+import { LiveMapPlaceholder } from "@/components/orders/LiveMapPlaceholder";
 
 /**
  * PUBLIC_INTERFACE
@@ -169,10 +44,9 @@ type OrderStatusMessage = {
   [key: string]: unknown;
 };
 
-export async function generateStaticParams(): Promise<Array<{ orderId: string }>> {
-  // No pre-rendered orders for static export; return empty list.
-  return [];
-}
+
+
+
 
 export default function OrderTrackingPage() {
   const params = useParams<{ orderId: string }>();
