@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { register } from "@/lib/api";
@@ -10,11 +10,9 @@ import Button from "@/components/common/Button";
 /**
  * PUBLIC_INTERFACE
  * RegisterPage allows users to create an account using the mocked API.
- * - On success: sets token and profile, then redirects to redirect param or home.
- * - On failure: shows a toast error.
- * - Client-side only and static-export friendly.
+ * Wrapped in Suspense to satisfy Next.js requirement for useSearchParams during static export.
  */
-export default function RegisterPage() {
+function RegisterContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { isLoggedIn, setToken, setProfile } = useUser();
@@ -117,5 +115,13 @@ export default function RegisterPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div className="mx-auto mt-10 max-w-md text-gray-600">Loading…</div>}>
+      <RegisterContent />
+    </Suspense>
   );
 }

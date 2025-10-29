@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { login } from "@/lib/api";
@@ -10,11 +10,9 @@ import Button from "@/components/common/Button";
 /**
  * PUBLIC_INTERFACE
  * LoginPage provides a simple email/password login flow using the mocked API.
- * - On success: sets token and profile in Zustand user slice and redirects to redirect param or home.
- * - On failure: shows a toast error.
- * - Client-side only; compatible with static export as it's pure client behavior.
+ * Wrapped in Suspense to satisfy Next.js requirement for useSearchParams during static export.
  */
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { isLoggedIn, setToken, setProfile } = useUser();
@@ -110,5 +108,13 @@ export default function LoginPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="mx-auto mt-10 max-w-md text-gray-600">Loading…</div>}>
+      <LoginContent />
+    </Suspense>
   );
 }
